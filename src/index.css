@@ -1,0 +1,22 @@
+@tailwind base;@tailwind components;@tailwind utilities;
+@layer base{*{scrollbar-width:thin;scrollbar-color:#d6cfc2 #fcfbf8}.dark *{scrollbar-color:#27272a #09090b}html{scroll-behavior:smooth}body{overflow-x:hidden}::selection{background:rgba(201,162,39,0.25);color:#18181b}.dark ::selection{background:rgba(220,38,38,0.3);color:white}}
+@layer components{
+.panel{@apply bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl;box-shadow:0 1px 3px rgba(0,0,0,0.06)}.dark .panel{box-shadow:0 4px 20px rgba(0,0,0,0.3),0 0 0 1px rgba(220,38,38,0.06),0 0 40px rgba(201,162,39,0.03)}
+.panel-raised{@apply bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl;box-shadow:0 4px 16px rgba(0,0,0,0.08)}.dark .panel-raised{box-shadow:0 8px 30px rgba(0,0,0,0.4),0 0 0 1px rgba(220,38,38,0.08)}
+.bg-dots{background-image:radial-gradient(circle,rgba(0,0,0,0.04) 1px,transparent 1px);background-size:24px 24px}.dark .bg-dots{background-image:radial-gradient(circle,rgba(255,255,255,0.03) 1px,transparent 1px)}
+.holo-card{position:relative;overflow:hidden}.holo-card::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 20%,rgba(220,38,38,0.08) 35%,rgba(201,162,39,0.12) 50%,rgba(168,85,247,0.06) 65%,transparent 80%);background-size:250% 100%;pointer-events:none;border-radius:inherit;opacity:0;transition:opacity 0.4s}.holo-card:hover::after{opacity:1}
+.btn-primary{@apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-display font-semibold text-sm text-white bg-gradient-to-r from-[#dc2626] to-[#c9a227] hover:from-red-600 hover:to-amber-600 transition-all duration-200 shadow-md hover:shadow-lg}
+.btn-secondary{@apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-display font-semibold text-sm text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all duration-200 shadow-sm}
+.btn-ghost{@apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-display font-medium text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 transition-all duration-200}
+.input{@apply w-full px-4 py-2.5 rounded-xl font-body text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all duration-200}
+.badge{@apply inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wider leading-none}
+.price-tag{@apply font-display font-extrabold tracking-tight bg-gradient-to-r from-[#dc2626] to-[#c9a227] bg-clip-text text-transparent}
+.divider{@apply border-t border-zinc-200 dark:border-zinc-800}
+}
+@layer utilities{
+.section-glow-red{background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(220,38,38,0.06) 0%,transparent 70%)}
+.dark .section-glow-red{background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(220,38,38,0.12) 0%,transparent 70%)}
+.section-glow-gold{background:radial-gradient(ellipse 50% 35% at 50% 0%,rgba(201,162,39,0.08) 0%,transparent 70%)}
+.dark .section-glow-gold{background:radial-gradient(ellipse 50% 35% at 50% 0%,rgba(201,162,39,0.12) 0%,transparent 70%)}
+.dark-brand-glow{box-shadow:0 8px 30px rgba(220,38,38,0.1),0 4px 16px rgba(201,162,39,0.06)}
+}
