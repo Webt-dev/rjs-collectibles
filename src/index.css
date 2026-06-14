@@ -1,5 +1,5 @@
 @tailwind base;@tailwind components;@tailwind utilities;
-@layer base{*{scrollbar-width:thin;scrollbar-color:#d6cfc2 #fcfbf8}.dark *{scrollbar-color:#27272a #09090b}html{scroll-behavior:smooth}body{overflow-x:hidden}::selection{background:rgba(201,162,39,0.25);color:#18181b}.dark ::selection{background:rgba(220,38,38,0.3);color:white}}
+@layer base{*{scrollbar-width:thin;scrollbar-color:#d6cfc2 #fcfbf8}.dark *{scrollbar-color:#27272a #09090b}html,body,#root{scroll-behavior:smooth;overflow-x:hidden;max-width:100vw}::selection{background:rgba(201,162,39,0.25);color:#18181b}.dark ::selection{background:rgba(220,38,38,0.3);color:white}}
 @layer components{
 .panel{@apply bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl;box-shadow:0 1px 3px rgba(0,0,0,0.06)}.dark .panel{box-shadow:0 4px 20px rgba(0,0,0,0.3),0 0 0 1px rgba(220,38,38,0.06),0 0 40px rgba(201,162,39,0.03)}
 .panel-raised{@apply bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl;box-shadow:0 4px 16px rgba(0,0,0,0.08)}.dark .panel-raised{box-shadow:0 8px 30px rgba(0,0,0,0.4),0 0 0 1px rgba(220,38,38,0.08)}

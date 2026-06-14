@@ -39,7 +39,8 @@ export default function Hero() {
     }));
   }, [cards]);
 
-  const minPrice = Math.min(...heroCards.map(c => c.price));
+  const allActiveForPrice = cards.filter(c => c.status === 'active' && c.stock > 0 && typeof c.price === 'number');
+  const minPrice = allActiveForPrice.length ? Math.min(...allActiveForPrice.map(c => c.price)) : 0;
 
   return (
     <section className="relative overflow-hidden border-b border-zinc-200 dark:border-zinc-900 bg-[#fcfbf8] dark:bg-[#0a0a0b]">
@@ -102,7 +103,7 @@ export default function Hero() {
 
           {/* RIGHT - Big animated cards */}
           <div className="flex justify-center lg:justify-end">
-            <div className="relative">
+            <div className="relative pb-8">
               {/* Glow */}
               <div className="absolute -inset-10 bg-[#dc2626]/10 dark:bg-[#dc2626]/10 blur-[80px] rounded-full" />
 
@@ -122,7 +123,7 @@ export default function Hero() {
               </div>
 
               {/* Floating price tag */}
-              <div className="absolute -bottom-2 sm:-bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xl">
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 px-4 py-2 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xl z-30">
                 <div className="flex items-center gap-2.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-[11px] text-zinc-500 dark:text-zinc-500 uppercase tracking-wide">Starting at</span>
@@ -152,15 +153,13 @@ function CardVisual({ card, featured = false }) {
             <div className="aspect-[63/88] bg-zinc-950">
               <img src={card.image} alt={card.name} className="w-full h-full object-contain" draggable={false} loading="eager" />
             </div>
-            {featured && (
-              <div className="absolute bottom-0 inset-x-0 p-3 sm:p-3.5 bg-gradient-to-t from-black/90 via-black/70 to-transparent">
+            <div className="absolute bottom-0 inset-x-0 p-2.5 sm:p-3 bg-gradient-to-t from-black/90 via-black/70 to-transparent">
                 <div className="text-[13px] sm:text-[14px] font-medium text-white truncate">{card.name}</div>
                 <div className="flex justify-between items-center mt-0.5">
                   <span className="text-[11px] text-zinc-300 truncate mr-2">{card.set}</span>
                   <span className="text-[14px] sm:text-[15px] font-bold text-[#dc2626]">${card.price}</span>
                 </div>
               </div>
-            )}
           </div>
         </div>
       </div>
@@ -172,15 +171,13 @@ function CardVisual({ card, featured = false }) {
       <div className="aspect-[63/88] bg-zinc-950">
         <img src={card.image} alt={card.name} className="w-full h-full object-contain" draggable={false} loading="eager" />
       </div>
-      {featured && (
-        <div className="absolute bottom-0 inset-x-0 p-3 sm:p-3.5 bg-gradient-to-t from-black/90 via-black/70 to-transparent">
+      <div className="absolute bottom-0 inset-x-0 p-2.5 sm:p-3 bg-gradient-to-t from-black/90 via-black/70 to-transparent">
           <div className="text-[13px] sm:text-[14px] font-medium text-white truncate">{card.name}</div>
           <div className="flex justify-between items-center mt-0.5">
             <span className="text-[11px] text-zinc-300 truncate mr-2">{card.set}</span>
             <span className="text-[14px] sm:text-[15px] font-bold text-[#dc2626]">${card.price}</span>
           </div>
         </div>
-      )}
     </div>
   );
 }
