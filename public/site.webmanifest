@@ -1,0 +1,20 @@
+{
+  "name": "RJS Collectibles",
+  "short_name": "RJS",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#dc2626",
+  "background_color": "#fcfbf8",
+  "display": "standalone",
+  "start_url": "/"
+}
