@@ -1,112 +1,123 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
+import { X, ChevronRight, Home, ShoppingBag, Send, HelpCircle, Mail } from "lucide-react";
 import { useApp } from "../context/AppContext";
-import { ChevronRight, X } from "lucide-react";
 import logo from "../assets/rjs-logo.png";
 
 export default function MobileMenu() {
   const { toggleMobileMenu, cards } = useApp();
 
-  // ONLY real Shopify tags - no mocks, no 'featured'
   const tags = useMemo(() => {
     const set = new Set();
-    cards.forEach(c => {
-      (c.tags || []).forEach(t => {
+    cards.forEach((c) => {
+      (c.tags || []).forEach((t) => {
         const tag = String(t).trim();
         if (!tag) return;
-        if (tag.toLowerCase() === "featured") return;
+        const low = tag.toLowerCase();
+        if (low === "featured" || low === "mystery") return;
         set.add(tag);
       });
     });
-    return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
+    return Array.from(set).sort();
   }, [cards]);
 
+  const mainLinks = [
+    { to: "/", label: "Home", Icon: Home },
+    { to: "/shop", label: "Shop", Icon: ShoppingBag },
+    { to: "/sell", label: "Sell Your Collection", Icon: Send },
+    { to: "/faq", label: "FAQ", Icon: HelpCircle },
+    { to: "/contact", label: "Contact", Icon: Mail },
+  ];
+
   return (
-    <div className="fixed inset-0 z-[100]">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-[60]">
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={toggleMobileMenu}
-        style={{ animation: "fadeIn 200ms ease-out" }}
+        className="absolute inset-0 bg-zinc-950/75 backdrop-blur-sm animate-backdrop-fade-in"
       />
 
-      {/* LEFT drawer - your brand colors */}
       <aside
-        className="absolute left-0 top-0 h-full w-[340px] max-w-[88vw] bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800 shadow-2xl flex flex-col"
-        onClick={e => e.stopPropagation()}
-        style={{
-          animation: "slideInLeft 300ms cubic-bezier(0.2, 0.8, 0.2, 1)",
-          willChange: "transform"
-        }}
+        onClick={(e) => e.stopPropagation()}
+        className="absolute top-0 left-0 h-full w-full sm:w-[380px] bg-white dark:bg-zinc-950 shadow-2xl animate-slide-from-left flex flex-col"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 h-[64px] border-b border-zinc-200 dark:border-zinc-800 shrink-0">
-          <div className="flex items-center gap-2.5">
-            <img src={logo} alt="RJS" className="h-8 w-auto" />
-            <div>
-              <div className="text-[17px] font-display font-bold text-zinc-900 dark:text-white leading-none">
-                RJS <span className="text-[#dc2626]">Collectibles</span>
-              </div>
-              <div className="text-[12px] text-zinc-500 dark:text-zinc-400 -mt-0.5">Shop by category</div>
-            </div>
+        {/* HEADER */}
+        <div className="px-6 py-5 bg-gradient-to-r from-[#7f1d1d] via-[#5f1111] to-[#7f1d1d] text-white flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <img
+              src={logo}
+              alt="RJS"
+              className="w-8 h-8 object-contain"
+            />
+            <span className="font-display font-black text-base">
+              RJS <span className="text-[#d4a82a]">Collectibles</span>
+            </span>
           </div>
           <button
             onClick={toggleMobileMenu}
-            className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-600 dark:text-zinc-400"
+            aria-label="Close"
+            className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 grid place-items-center transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Tags */}
-        <nav className="flex-1 overflow-y-auto">
-          {tags.length === 0? (
-            <div className="px-6 py-16 text-center">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-900 mb-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#dc2626] animate-pulse" />
-                <span className="text-[11px] text-zinc-600 dark:text-zinc-400 uppercase tracking-wide">Waiting for Shopify</span>
-              </div>
-              <p className="text-[13px] text-zinc-500">Add tags in Shopify and they appear here automatically.</p>
-            </div>
-          ) : (
-            tags.map(tag => (
+        <div className="flex-1 overflow-y-auto">
+          {/* MAIN LINKS */}
+          <nav className="py-2">
+            {mainLinks.map(({ to, label, Icon }, i) => (
               <Link
-                key={tag}
-                to={`/shop?tag=${encodeURIComponent(tag)}`}
+                key={to}
+                to={to}
                 onClick={toggleMobileMenu}
-                className="group flex items-center justify-between px-5 py-3.5 border-b border-zinc-100 dark:border-zinc-800/60 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
+                className="group flex items-center justify-between px-6 py-3.5 text-sm border-b border-zinc-100 dark:border-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-900/70 transition-colors animate-fade-up"
+                style={{ animationDelay: `${i * 50}ms` }}
               >
-                <span className="text-[15px] text-zinc-700 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-white">
-                  {tag}
-                </span>
-                <ChevronRight className="w-4 h-4 text-zinc-300 dark:text-zinc-600 group-hover:text-[#dc2626] group-hover:translate-x-0.5 transition-all" />
+                <div className="flex items-center gap-3">
+                  <Icon className="w-4 h-4 text-[#dc2626]" />
+                  <span className="font-display font-bold text-zinc-900 dark:text-white group-hover:text-[#dc2626] transition-colors">
+                    {label}
+                  </span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:text-[#dc2626] group-hover:translate-x-1 transition-all" />
               </Link>
-            ))
-          )}
-        </nav>
+            ))}
+          </nav>
 
-        {/* NEW: Sell Your Collection - bottom of mobile menu */}
-        <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
+          {/* CATEGORIES */}
+          {tags.length > 0 && (
+            <div className="px-6 pt-5 pb-3">
+              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#b8901f] mb-2">
+                Shop by Category
+              </p>
+            </div>
+          )}
+          {tags.map((tag, i) => (
+            <Link
+              key={tag}
+              to={`/shop?tag=${encodeURIComponent(tag)}`}
+              onClick={toggleMobileMenu}
+              className="group flex items-center justify-between px-6 py-3 text-sm border-b border-zinc-100 dark:border-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-900/70 transition-colors animate-fade-up"
+              style={{ animationDelay: `${Math.min(i * 30, 300)}ms` }}
+            >
+              <span className="text-zinc-700 dark:text-zinc-300 group-hover:text-[#dc2626] transition-colors">
+                {tag}
+              </span>
+              <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:text-[#dc2626] group-hover:translate-x-1 transition-all" />
+            </Link>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <div className="border-t border-zinc-200 dark:border-zinc-800 p-4">
           <Link
             to="/sell"
             onClick={toggleMobileMenu}
-            className="btn-primary w-full justify-center"
-            style={{ background: 'linear-gradient(90deg, #dc2626, #c9a227)' }}
+            className="block w-full text-center px-5 py-3 rounded-xl font-display font-black text-sm text-white bg-gradient-to-r from-[#dc2626] to-[#b8901f] hover:scale-[1.02] transition-transform shadow-md"
           >
-            Sell Your Collection
+            Sell Your Collection →
           </Link>
-          <p className="text-[11px] text-center text-zinc-500 dark:text-zinc-500 mt-2">
-            Get a quote in 24h
-          </p>
         </div>
-
-        <div className="h-[2px] w-full bg-[#dc2626]" />
       </aside>
-
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-        @keyframes slideInLeft { from { transform: translateX(-100%) } to { transform: translateX(0) } }
-      `}</style>
     </div>
   );
 }

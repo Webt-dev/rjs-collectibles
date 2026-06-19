@@ -9,6 +9,9 @@ import MobileMenu from "./components/MobileMenu";
 import HomePage from "./pages/HomePage";
 import ShopPage from "./pages/ShopPage";
 import SellCollection from "./pages/SellCollection";
+import FAQPage from "./pages/FAQPage";
+import ContactPage from "./pages/ContactPage";
+
 
 export default function App() {
   const { selectedCard, selectCard, showCartDrawer, mobileMenuOpen } = useApp();
@@ -41,7 +44,7 @@ export default function App() {
   }, [mobileMenuOpen, showCartDrawer]);
 
   return (
-    <div className="min-h-screen flex flex-col w-full max-w- overflow-x-hidden bg-[#fcfbf8] dark:bg-[#050507]">
+    <div className="min-h-screen flex flex-col w-full max-w-full overflow-x-hidden bg-[#fcfbf8] dark:bg-[#0b1120] text-zinc-900 dark:text-white">
       <Header />
       {mobileMenuOpen && <MobileMenu />}
       <main className="flex-1 w-full overflow-x-hidden">
@@ -49,6 +52,9 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/sell" element={<SellCollection />} />
+          <Route path="/faq" element={<FAQPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+
         </Routes>
       </main>
       <Footer />
