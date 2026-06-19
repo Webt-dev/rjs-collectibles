@@ -16,7 +16,14 @@ export default function ShopPage() {
 
   const allTags = useMemo(() => {
     const tags = new Set();
-    shopifyProducts.forEach(p => (p.tags || []).forEach(t => tags.add(String(t).trim())));
+    shopifyProducts.forEach(p =>
+      (p.tags || []).forEach(t => {
+        const tag = String(t).trim();
+        // <-- take "featured" out of shop filters
+        if (tag.toLowerCase() === "featured") return;
+        tags.add(tag);
+      })
+    );
     const priority = ["Booster Box", "Booster Pack", "2010", "2013", "2016", "2020"];
     const sorted = Array.from(tags).sort((a, b) => {
       const ia = priority.indexOf(a);
@@ -87,7 +94,7 @@ export default function ShopPage() {
                   onClick={() => setActiveTag(tag)}
                   className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
                     active
-                     ? "bg-[#dc2626] text-white shadow-md"
+                    ? "bg-[#dc2626] text-white shadow-md"
                       : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                   }`}
                 >
@@ -128,7 +135,8 @@ export default function ShopPage() {
                   <button
                     onClick={(e) => { e.stopPropagation(); addToCart(product); }}
                     disabled={product.stock === 0}
-                    className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 grid place-items-center text-[#dc2626] opacity-0 group-hover:opacity-100 hover:bg-[#dc2626] hover:text-white transition-all"
+                    className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 grid place-items-center text-[#dc2626] shadow-lg hover:bg-[#dc2626] hover:text-white hover:border-[#dc2626] transition-all hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Add to cart"
                   >
                     +
                   </button>

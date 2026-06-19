@@ -100,7 +100,11 @@ export default function HomePage() {
   );
 
   const newArrivals = useMemo(
-    () => shopifyProducts.slice(0, 10),
+    () => {
+      // Randomize every page load - shuffle products
+      const shuffled = [...shopifyProducts].sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, 10);
+    },
     [shopifyProducts]
   );
 
@@ -150,7 +154,11 @@ export default function HomePage() {
       });
     });
 
-    return Array.from(tagMap.values()).slice(0, 8);
+    const allCollections = Array.from(tagMap.values());
+    
+    // Randomize browse collections every page load - same as New Arrivals
+    const shuffled = [...allCollections].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 8);
   }, [shopifyProducts]);
 
   return (
