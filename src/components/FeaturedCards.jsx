@@ -63,13 +63,13 @@ export default function FeaturedCards() {
 
         <div
           ref={gridRef}
-          className="flex gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory pb-4 -mx-4 px-4 scrollbar-hide"
+          className="flex gap-3 sm:gap-6 overflow-x-auto snap-x snap-mandatory pb-4 -mx-4 pl-4 pr-6 scrollbar-hide scroll-pl-4"
         >
           {featured.slice(0, 10).map((product) => (
             <article
               key={product.id}
               onClick={() => selectCard(product)}
-              className="fc-item scroll-reveal snap-start shrink-0 w-[190px] sm:w-[230px] cursor-pointer group"
+              className="fc-item scroll-reveal snap-start shrink-0 w-[155px] sm:w-[230px] cursor-pointer group"
             >
               <div className="relative aspect-square rounded-[1.35rem] bg-gradient-to-br from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950 border border-zinc-200 dark:border-zinc-800 overflow-hidden group-hover:border-[#c9a227] transition-all duration-300 shadow-sm group-hover:shadow-[0_18px_45px_rgba(201,162,39,0.22)]">
                 <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full bg-gradient-to-r from-[#dc2626] to-[#c9a227] text-white text-[9px] font-black uppercase tracking-wider">

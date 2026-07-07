@@ -1,17 +1,71 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { Mail, MapPin, MessageCircle, Send, Check } from "lucide-react";
+
+const CONTACT_ENDPOINT = import.meta.env.VITE_CONTACT_ENDPOINT || "";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ContactPage() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  const submit = (e) => {
+  const validate = (d) => {
+    const e = {};
+    if (!d.name || d.name.length < 2) e.name = "Please enter your name";
+    if (d.name && d.name.length > 80) e.name = "Name too long";
+    if (!d.email || !EMAIL_RE.test(d.email)) e.email = "Invalid email";
+    if (!d.subject || d.subject.length < 2) e.subject = "Subject required";
+    if (d.subject && d.subject.length > 120) e.subject = "Subject too long";
+    if (!d.message || d.message.length < 5) e.message = "Message too short";
+    if (d.message && d.message.length > 3000) e.message = "Message too long";
+    return e;
+  };
+
+  const submit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    const form = new FormData(e.target);
+    const data = Object.fromEntries(form.entries());
+
+    // Honeypot
+    if (data.website) {
       setSent(true);
-    }, 700);
+      return;
+    }
+
+    const eMap = validate(data);
+    setErrors(eMap);
+    if (Object.keys(eMap).length > 0) return;
+
+    if (!CONTACT_ENDPOINT) {
+      console.error("VITE_CONTACT_ENDPOINT is not configured.");
+      alert(
+        "Form is temporarily unavailable. Please email hello@rjscollectibles.com directly."
+      );
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await fetch(CONTACT_ENDPOINT, {
+        method: "POST",
+        mode: "no-cors",
+        body: JSON.stringify({
+          ...data,
+          formType: "contact", // routes to handleContact() in Apps Script
+          timestamp: new Date().toISOString(),
+          page: window.location.href,
+          userAgent: navigator.userAgent,
+        }),
+      });
+      setSent(true);
+    } catch (err) {
+      console.error(err);
+      alert("Could not send. Please email hello@rjscollectibles.com directly.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const cards = [
@@ -20,116 +74,102 @@ export default function ContactPage() {
     { Icon: MapPin, label: "Shipping", value: "Worldwide from RJS HQ" },
   ];
 
+  const inputCls =
+    "w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#dc2626]/30 focus:border-[#dc2626]";
+  const errCls = "mt-1 text-xs text-red-600";
+
   return (
-    <main className="bg-white dark:bg-zinc-950 text-zinc-950 dark:text-white animate-page-enter overflow-hidden">
-      <section className="relative border-b border-zinc-200 dark:border-zinc-800 bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900/40 dark:to-zinc-950 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_50%_0%,rgba(220,38,38,0.10),transparent_70%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_30%_at_50%_100%,rgba(184,144,31,0.10),transparent_70%)]" />
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
+      <span className="inline-block px-3 py-1 rounded-full text-[11px] font-bold tracking-widest text-[#dc2626] bg-red-50 dark:bg-red-950/30">
+        Get In Touch
+      </span>
+      <h1 className="mt-4 font-display font-black text-3xl sm:text-4xl text-zinc-950 dark:text-white">
+        Contact Us
+      </h1>
+      <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+        We reply within 24 hours.
+      </p>
 
-        <div className="relative max-w-3xl mx-auto px-6 py-16 sm:py-20 text-center animate-fade-up">
-          <span className="inline-block text-[11px] font-black uppercase tracking-[0.22em] text-[#b8901f] mb-2">
-            Get In Touch
-          </span>
-          <h1 className="font-display text-3xl sm:text-5xl font-black mb-3">
-            Contact <span className="bg-gradient-to-r from-[#dc2626] to-[#b8901f] bg-clip-text text-transparent">Us</span>
-          </h1>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            We reply within 24 hours.
-          </p>
-        </div>
-      </section>
-
-      <section className="max-w-5xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-6">
+      <div className="mt-8 grid sm:grid-cols-3 gap-3">
         {cards.map(({ Icon, label, value }, i) => (
           <div
-            key={label}
-            className="animate-fade-up p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 hover:border-[#b8901f] transition-colors group"
-            style={{ animationDelay: `${i * 80}ms` }}
+            key={i}
+            className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#dc2626] to-[#b8901f] grid place-items-center text-white mb-3 group-hover:scale-110 transition-transform">
-              <Icon className="w-4 h-4" />
-            </div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">{label}</p>
-            <p className="text-sm font-bold">{value}</p>
+            <Icon className="w-5 h-5 text-[#dc2626]" aria-hidden="true" />
+            <p className="mt-2 text-[11px] uppercase tracking-widest text-zinc-500">
+              {label}
+            </p>
+            <p className="mt-1 text-sm font-bold text-zinc-900 dark:text-white">
+              {value}
+            </p>
           </div>
         ))}
-      </section>
+      </div>
 
-      <section className="max-w-3xl mx-auto px-6 pb-20">
-        <div
-          className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-6 sm:p-10 animate-fade-up"
-          style={{ animationDelay: "300ms" }}
-        >
-          {sent ? (
-            <div className="text-center py-10 animate-fade-up">
-              <div className="w-14 h-14 mx-auto rounded-full bg-gradient-to-br from-[#dc2626] to-[#b8901f] grid place-items-center text-white mb-4">
-                <Check className="w-6 h-6" />
-              </div>
-              <h2 className="font-display text-2xl font-black mb-2">Message Sent</h2>
-              <p className="text-sm text-zinc-500">We'll reply within 24 hours.</p>
-            </div>
-          ) : (
-            <form onSubmit={submit} className="space-y-4">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">
-                    Name
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    name="name"
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#dc2626]/30 focus:border-[#dc2626] transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">
-                    Email
-                  </label>
-                  <input
-                    required
-                    type="email"
-                    name="email"
-                    className="w-full px-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#dc2626]/30 focus:border-[#dc2626] transition-all"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">
-                  Subject
-                </label>
-                <input
-                  type="text"
-                  name="subject"
-                  className="w-full px-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#dc2626]/30 focus:border-[#dc2626] transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">
-                  Message
-                </label>
-                <textarea
-                  required
-                  rows={5}
-                  name="message"
-                  className="w-full px-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#dc2626]/30 focus:border-[#dc2626] transition-all resize-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3.5 rounded-xl font-display font-black text-sm bg-gradient-to-r from-[#dc2626] to-[#b8901f] text-white hover:scale-[1.02] active:scale-95 transition-transform shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                <Send className="w-4 h-4" />
-                {loading ? "Sending..." : "Send Message"}
-              </button>
-            </form>
-          )}
+      {sent ? (
+        <div className="mt-10 p-8 rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-center">
+          <Check className="w-8 h-8 mx-auto text-emerald-600" />
+          <h3 className="mt-3 font-display font-black text-xl text-zinc-950 dark:text-white">
+            Message Sent
+          </h3>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            We'll reply within 24 hours.
+          </p>
         </div>
-      </section>
-    </main>
+      ) : (
+        <form onSubmit={submit} noValidate className="mt-8 space-y-4">
+          <input
+            type="text"
+            name="website"
+            tabIndex="-1"
+            autoComplete="off"
+            aria-hidden="true"
+            className="hidden"
+          />
+
+          <div>
+            <label htmlFor="c-name" className="block text-xs font-bold mb-1">Name</label>
+            <input id="c-name" name="name" maxLength={80} required className={inputCls} />
+            {errors.name && <p className={errCls}>{errors.name}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="c-email" className="block text-xs font-bold mb-1">Email</label>
+            <input id="c-email" name="email" type="email" maxLength={120} required className={inputCls} />
+            {errors.email && <p className={errCls}>{errors.email}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="c-subject" className="block text-xs font-bold mb-1">Subject</label>
+            <input id="c-subject" name="subject" maxLength={120} required className={inputCls} />
+            {errors.subject && <p className={errCls}>{errors.subject}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="c-message" className="block text-xs font-bold mb-1">Message</label>
+            <textarea id="c-message" name="message" rows={5} maxLength={3000} required className={inputCls} />
+            {errors.message && <p className={errCls}>{errors.message}</p>}
+          </div>
+
+          <p className="text-xs text-zinc-500">
+            By submitting, you accept our{" "}
+            <Link to="/privacy" className="underline text-[#dc2626] font-bold">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#dc2626] to-[#b8901f] text-white font-display font-black text-sm hover:scale-[1.01] active:scale-95 transition-transform disabled:opacity-50 inline-flex items-center justify-center gap-2"
+          >
+            <Send className="w-4 h-4" aria-hidden="true" />
+            {loading ? "Sending..." : "Send Message"}
+          </button>
+        </form>
+      )}
+    </div>
   );
 }

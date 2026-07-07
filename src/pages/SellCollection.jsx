@@ -1,28 +1,65 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
-const GOOGLE_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+const GOOGLE_SCRIPT_URL = import.meta.env.VITE_SELL_FORM_ENDPOINT || "";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function SellCollection() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const validate = (data) => {
+    const e = {};
+    if (!data.name || data.name.length < 2) e.name = "Please enter your name";
+    if (data.name && data.name.length > 80) e.name = "Name too long";
+    if (!data.email || !EMAIL_RE.test(data.email)) e.email = "Invalid email";
+    if (data.email && data.email.length > 120) e.email = "Email too long";
+    if (data.whatsapp && data.whatsapp.length > 30) e.whatsapp = "Too long";
+    if (data.details && data.details.length > 2000)
+      e.details = "Please keep it under 2000 characters";
+    if (data.photos && data.photos.length > 500) e.photos = "URL too long";
+    if (!data.consent) e.consent = "Consent is required";
+    return e;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     const form = new FormData(e.target);
     const data = Object.fromEntries(form.entries());
+
+    // Honeypot — real users never fill this
+    if (data.website) {
+      setSent(true); // pretend success to fool bots
+      return;
+    }
+
+    data.consent = !!data.consent;
+    const eMap = validate(data);
+    setErrors(eMap);
+    if (Object.keys(eMap).length > 0) return;
+
+    if (!GOOGLE_SCRIPT_URL) {
+      console.error("VITE_SELL_FORM_ENDPOINT is not configured.");
+      alert("Form is temporarily unavailable. Please contact us via WhatsApp.");
+      return;
+    }
+
+    setLoading(true);
     data.timestamp = new Date().toISOString();
     data.source = "rjs-website";
+    data.page = window.location.href;
 
     try {
       await fetch(GOOGLE_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       setSent(true);
     } catch (err) {
+      console.error(err);
       alert("Error sending. Please try WhatsApp.");
     } finally {
       setLoading(false);
@@ -31,107 +68,140 @@ export default function SellCollection() {
 
   if (sent) {
     return (
-      <section className="bg-[#fcfbf8] dark:bg-zinc-950 min-h-[70vh] flex items-center">
-        <div className="max-w-xl mx-auto px-4 py-20 text-center">
-          <div className="panel p-10">
-            <div className="w-12 h-12 mx-auto rounded-full bg-emerald-500/10 flex items-center justify-center mb-4">
-              <span className="text-2xl">✓</span>
-            </div>
-            <h1 className="text-2xl font-bold mb-2">Received!</h1>
-            <p className="text-zinc-600 dark:text-zinc-400">We’ll review your collection and reply within 24h with an offer.</p>
-          </div>
+      <div className="max-w-xl mx-auto px-4 py-20 text-center">
+        <div className="w-16 h-16 mx-auto rounded-full bg-emerald-50 dark:bg-emerald-950/40 grid place-items-center text-2xl text-emerald-600 mb-6">
+          ✓
         </div>
-      </section>
+        <h2 className="font-display font-black text-3xl text-zinc-950 dark:text-white">
+          Received!
+        </h2>
+        <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+          We'll review your collection and reply within 24h with an offer.
+        </p>
+      </div>
     );
   }
 
+  const inputCls =
+    "w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#dc2626]/30 focus:border-[#dc2626]";
+  const errCls = "mt-1 text-xs text-red-600";
+
   return (
-    <section className="relative overflow-hidden border-b border-zinc-200 dark:border-zinc-900 bg-[#fcfbf8] dark:bg-zinc-950">
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(220,38,38,0.12),_transparent_60%)]" />
-      </div>
-      <div className="relative max-w-3xl mx-auto px-4 py-12 lg:py-16">
-        <div className="text-center mb-8">
-          <h1 className="font-display font-bold text-[clamp(1.8rem,4vw,2.5rem)] text-zinc-900 dark:text-white">
-            Sell Your <span className="text-[#dc2626]">Collection</span>
-          </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mt-2">Tell us about your cards. We respond within 24h with a fair offer.</p>
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
+      <h1 className="font-display font-black text-3xl sm:text-4xl text-zinc-950 dark:text-white">
+        Sell Your Collection
+      </h1>
+      <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+        Tell us about your cards. We respond within 24h with a fair offer.
+      </p>
+
+      <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
+        {/* Honeypot */}
+        <input
+          type="text"
+          name="website"
+          tabIndex="-1"
+          autoComplete="off"
+          aria-hidden="true"
+          className="hidden"
+        />
+
+        <div>
+          <label htmlFor="name" className="block text-xs font-bold mb-1 text-zinc-700 dark:text-zinc-300">
+            Name *
+          </label>
+          <input id="name" name="name" maxLength={80} required className={inputCls} />
+          {errors.name && <p className={errCls}>{errors.name}</p>}
         </div>
 
-        <form onSubmit={handleSubmit} className="panel p-6 sm:p-8 space-y-4">
-          {/* Row 1 */}
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-[12px] text-zinc-500">Name*</label>
-              <input name="name" required className="input mt-1" placeholder="Arthur Mateus" />
-            </div>
-            <div>
-              <label className="text-[12px] text-zinc-500">Email*</label>
-              <input name="email" type="email" required className="input mt-1" placeholder="you@email.com" />
-            </div>
-          </div>
-
-          {/* Row 2 - THIS WAS MISSING ITS CLOSING TAG */}
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-[12px] text-zinc-500">WhatsApp</label>
-              <input name="phone" className="input mt-1" placeholder="+55 21..." />
-            </div>
-            <div>
-              <label className="text-[12px] text-zinc-500">Collection Type</label>
-              <select name="type" className="input mt-1" defaultValue="Pokémon">
-                <option>Pokémon</option>
-                <option>Magic: The Gathering</option>
-                <option>Yu-Gi-Oh!</option>
-                <option>Sports Cards</option>
-                <option>Other</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Row 3 */}
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-[12px] text-zinc-500">Estimated Quantity</label>
-              <input name="quantity" className="input mt-1" placeholder="e.g., 300 cards" />
-            </div>
-            <div>
-              <label className="text-[12px] text-zinc-500">Condition</label>
-              <select name="condition" className="input mt-1" defaultValue="Mint / Near Mint">
-                <option>Mint / Near Mint</option>
-                <option>Light Play</option>
-                <option>Played</option>
-                <option>Mixed</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-[12px] text-zinc-500">Photos Link (Drive, Imgur)</label>
-            <input name="photos" className="input mt-1" placeholder="https://" />
-          </div>
-
-          <div>
-            <label className="text-[12px] text-zinc-500">Tell us more</label>
-            <textarea name="notes" rows="4" className="input mt-1" placeholder="Key cards, sets, year, graded?" />
-          </div>
-
-          <label className="flex items-center gap-2 text-[12px] text-zinc-600 dark:text-zinc-400">
-            <input type="checkbox" name="consent" required /> I agree to be contacted about my collection
+        <div>
+          <label htmlFor="email" className="block text-xs font-bold mb-1 text-zinc-700 dark:text-zinc-300">
+            Email *
           </label>
+          <input id="email" name="email" type="email" maxLength={120} required className={inputCls} />
+          {errors.email && <p className={errCls}>{errors.email}</p>}
+        </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full h-12 text-[15px]"
-            style={{background: 'linear-gradient(90deg, #dc2626, #c9a227)'}}
-          >
-            {loading? "Sending..." : "Send My Collection"}
-          </button>
+        <div>
+          <label htmlFor="whatsapp" className="block text-xs font-bold mb-1 text-zinc-700 dark:text-zinc-300">
+            WhatsApp
+          </label>
+          <input id="whatsapp" name="whatsapp" maxLength={30} className={inputCls} />
+          {errors.whatsapp && <p className={errCls}>{errors.whatsapp}</p>}
+        </div>
 
-          <p className="text-[11px] text-center text-zinc-500">Your info goes directly to our Google Sheet – no spam.</p>
-        </form>
-      </div>
-    </section>
+        <div>
+          <label htmlFor="type" className="block text-xs font-bold mb-1 text-zinc-700 dark:text-zinc-300">
+            Collection Type
+          </label>
+          <select id="type" name="type" className={inputCls}>
+            <option>Pokémon</option>
+            <option>Magic: The Gathering</option>
+            <option>Yu-Gi-Oh!</option>
+            <option>Sports Cards</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="quantity" className="block text-xs font-bold mb-1 text-zinc-700 dark:text-zinc-300">
+            Estimated Quantity
+          </label>
+          <input id="quantity" name="quantity" type="number" min="0" max="999999" className={inputCls} />
+        </div>
+
+        <div>
+          <label htmlFor="condition" className="block text-xs font-bold mb-1 text-zinc-700 dark:text-zinc-300">
+            Condition
+          </label>
+          <select id="condition" name="condition" className={inputCls}>
+            <option>Mint / Near Mint</option>
+            <option>Light Play</option>
+            <option>Played</option>
+            <option>Mixed</option>
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="photos" className="block text-xs font-bold mb-1 text-zinc-700 dark:text-zinc-300">
+            Photos Link (Drive, Imgur)
+          </label>
+          <input id="photos" name="photos" type="url" maxLength={500} className={inputCls} />
+          {errors.photos && <p className={errCls}>{errors.photos}</p>}
+        </div>
+
+        <div>
+          <label htmlFor="details" className="block text-xs font-bold mb-1 text-zinc-700 dark:text-zinc-300">
+            Tell us more
+          </label>
+          <textarea id="details" name="details" rows={4} maxLength={2000} className={inputCls} />
+          {errors.details && <p className={errCls}>{errors.details}</p>}
+        </div>
+
+        <label className="flex items-start gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+          <input type="checkbox" name="consent" required className="mt-0.5" />
+          <span>
+            I agree to be contacted about my collection and accept the{" "}
+            <Link to="/privacy" className="underline text-[#dc2626] font-bold">
+              Privacy Policy
+            </Link>
+            .
+          </span>
+        </label>
+        {errors.consent && <p className={errCls}>{errors.consent}</p>}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#dc2626] to-[#b8901f] text-white font-display font-black text-sm hover:scale-[1.01] active:scale-95 transition-transform disabled:opacity-50"
+        >
+          {loading ? "Sending..." : "Send My Collection"}
+        </button>
+
+        <p className="text-center text-[11px] text-zinc-500">
+          Your info goes directly to our Google Sheet – no spam.
+        </p>
+      </form>
+    </div>
   );
 }
